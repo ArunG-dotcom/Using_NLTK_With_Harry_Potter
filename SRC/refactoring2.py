@@ -4,6 +4,7 @@ Created on Thu Jan 14 19:12:43 2021
 
 @author: reach
 """
+# Nan - not a number
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
@@ -14,7 +15,7 @@ import pandas as pd
 import numpy as np
 import re
 
-def get(filename):
+def get(filename, bookname):
     #Setting the path to the first book in the harry potter series.
 
     nltk.download('stopwords')
@@ -25,53 +26,72 @@ def get(filename):
     
     
 
-#   opening,reading,translating(replacing),and spliting the sorcerors stone file
+#opening,reading,translating(replacing),and spliting the sorcerors stone file
     with open(filename,"r",encoding='utf8',errors="ignore") as f:
         text_list = f.read().lower().split()
-           
+    #takes out punctuation lines 32 - 45  
     stop_list = []
     stop_words = list(stopwords.words("english"))
     for word in text_list:
         if word in stop_words:
             pass
         else:
-            stop_list.append(word)
+            stop_list.append(word) 
         
     trans = str.maketrans("","",'~!@#$%^&*()`,.<>/?\\|[]{};-\n\':"') 
     strip_list = []
     for word in stop_list:
         word = word.translate(trans)
-        strip_list.append(word)
+        strip_list.append(word) # adding the single item to a existing list
             
     stem_list = []
     ss = SnowballStemmer("english")
     for word in strip_list:
         word = ss.stem(word)
         stem_list.append(word)
-    
-    ngram = list(everygrams(stem_list, min_len = 3, max_len = 5))
-    
+    #Returns all possible ngrams generated from a sequence of items,
+    #as an iterator.
+    #converts to a list
+    ngram = list(everygrams(stem_list, min_len = 3, max_len = 5))  
+    # adds any item to the exisisting list/dictionary
     count_dict = defaultdict(lambda: 0)
     for tuples in ngram:
         count_dict[tuples] += 1
     
-    df = pd.DataFrame(count_dict, index = ["sorcerors_stone"])
+    df = pd.DataFrame(count_dict, index = [bookname])# corresponds with line55
+    
             
             
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-    print(df)
+    return df
 
 if __name__=="__main__":
-    print(get('../Data/sorcerors_stone.txt'))
+    df1 = get('../Data/sorcerors_stone.txt', 'sorcerors_stone') 
+    df2 = get('../Data/fellowship_of_ring.txt', 'fellowship_ring')
+    df3 = get('../Data/unknown.txt','unknown')
+    df = pd.concat([df1,df2,df3]).fillna(0)
+    print(df)
+    # distance from orgin - linealg function
+    d = np.linalg.norm(df.loc['sorcerors_stone'] - df.loc['unknown']) 
+    print("The distance between the sorcerors stone and the unknown")
+    print(d)
+
+    # distance from orgin - linealg function
+    #The loc property is used to access a group of rows and columns by label(s)
+    #or a boolean array. . loc[] is primarily label based, but may also be used
+    #with a boolean array.
+    c = np.linalg.norm(df.loc['fellowship_ring'] - df.loc['unknown']) 
+    print("The distance between the fellowship ring and the unknown")
+    print(c)
+    print("The sorcerors stone is similar to the unkwon book")
+              
+
+    
+                      
+
+
+  
+
+   
 
 
 
